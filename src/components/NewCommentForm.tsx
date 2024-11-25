@@ -19,6 +19,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, addComment }) => {
   const [isEmailError, setIsEmailError] = useState(false);
   const [isBodyError, setIsBodyError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPostError, setIsPostError] = useState(false);
 
   const clearAllError = () => {
     setIsLoading(false);
@@ -51,11 +52,16 @@ export const NewCommentForm: React.FC<Props> = ({ postId, addComment }) => {
     createComment(comment)
       .then(result => {
         addComment({ ...comment, id: result.id });
+        setComment(prev => ({ ...prev, body: '' }));
       })
-      .catch()
+      .catch(() => {
+        setIsPostError(true);
+        setTimeout(() => {
+          setIsPostError(false);
+        }, 3000);
+      })
       .finally(() => {
         clearAllError();
-        setComment(prev => ({ ...prev, body: '' }));
       });
   };
 
@@ -199,6 +205,10 @@ export const NewCommentForm: React.FC<Props> = ({ postId, addComment }) => {
           </button>
         </div>
       </div>
+
+      {isPostError && (
+        <div className="notification is-danger">Something went wrong</div>
+      )}
     </form>
   );
 };

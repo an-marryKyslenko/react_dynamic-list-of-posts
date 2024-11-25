@@ -14,9 +14,10 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [isCreateComment, setIsCreateComment] = useState(false);
+  const [isDeleteError, setIsDeleteError] = useState(false);
 
-  useEffect(() => {
-    if (post) {
+  const loadComments = () => {
+    if (post && !isError) {
       setIsCreateComment(false);
       setIsLoading(true);
 
@@ -33,14 +34,28 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
 
           setComments(results);
         })
-        .catch(() => setIsError(true))
+        .catch(() => {
+          setIsError(true);
+          setTimeout(() => {
+            setIsError(false);
+          }, 3000);
+        })
         .finally(() => setIsLoading(false));
     }
-  }, [post]);
+  };
+
+  useEffect(() => {
+    loadComments();
+  }, [post, isError]);
 
   const deleteComment = (commentId: number) => {
     setComments(prev => prev.filter(comment => comment.id !== commentId));
-    serverAction.deleteComment(commentId);
+    serverAction.deleteComment(commentId).catch(() => {
+      setIsDeleteError(true);
+      setTimeout(() => {
+        setIsDeleteError(false);
+      }, 3000);
+    });
   };
 
   const addComment = (comment: Comment) => {
@@ -66,6 +81,12 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
               {isError && (
                 <div className="notification is-danger" data-cy="CommentsError">
                   Something went wrong
+                </div>
+              )}
+
+              {isDeleteError && (
+                <div className="notification is-danger">
+                  You cann&apos;t delete comment!
                 </div>
               )}
 

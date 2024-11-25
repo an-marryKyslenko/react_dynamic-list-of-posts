@@ -23,12 +23,13 @@ export const App = () => {
   const selectUser = (user: User) => {
     setOpenedPost(null);
     setPosts([]);
-    setIsLoading(true);
     setSelectedUser(user);
   };
 
-  useEffect(() => {
-    if (selectedUser) {
+  const loadPost = () => {
+    if (selectedUser && !isError) {
+      setIsLoading(true);
+
       getPosts(selectedUser.id)
         .then(result => {
           const results = result.map(post => ({
@@ -42,13 +43,17 @@ export const App = () => {
         })
         .catch(() => {
           setIsError(true);
-          // setTimeout(() => setIsError(false), 3000)
+          setTimeout(() => setIsError(false), 3000);
         })
         .finally(() => {
           setIsLoading(false);
         });
     }
-  }, [selectedUser]);
+  };
+
+  useEffect(() => {
+    loadPost();
+  }, [selectedUser, isError]);
 
   const chosePost = (post: Post | null) => {
     setOpenedPost(post);
